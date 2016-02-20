@@ -8,14 +8,14 @@ RUN mkdir /home/odoo/.ssh
 
 ## This is a key you must copy in the same folder as the dockerfile
 ## bur remember not to add it when you commit the files
-ADD id_rsa /home/odoo/.ssh/id_rsa
+COPY id_rsa /home/odoo/.ssh/id_rsa
 
 RUN chown odoo:odoo -R /home/odoo \
     && chmod 600 /home/odoo/.ssh/id_rsa
-ADD files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN mkdir /external_files
-ADD files/supervisord.conf /external_files/supervisord.conf
-ADD files/openerp_serverrc /external_files/openerp_serverrc
+COPY files/supervisord.conf /external_files/supervisord.conf
+COPY files/openerp_serverrc /external_files/openerp_serverrc
 USER odoo
 ENV HOME /home/odoo
 ENV ODOO_CONFIG_FILE /home/odoo/.openerp_serverrc
@@ -38,7 +38,7 @@ RUN cd /home/odoo/instance/extra_addons \
 RUN rm /home/odoo/.ssh/id_rsa
 RUN mkdir -p /home/odoo/.local/share
 ENV XDG_DATA_HOME /home/odoo/.local/share
-ADD files/openerp_serverrc /home/odoo/.openerp_serverrc
+COPY files/openerp_serverrc /home/odoo/.openerp_serverrc
 USER root
 RUN mkdir -p /var/log/supervisor
 RUN wget -q -O /entry_point.py https://raw.githubusercontent.com/vauxoo/docker_entrypoint/master/entry_point.py \
