@@ -1,13 +1,13 @@
-# Put the image name according to the version
+## Put the image name according to the version
 FROM vauxoo/odoo-80-image
 
-# Remember to put you name
+## Remember to put you name
 MAINTAINER Your Name <mail@example.com>
 
-# Change the version to the correspondig one
+## Change the version to the correspondig one
 ENV VERSION 8.0
 
-# Change the repor according to the customer app repo
+## Change the repo according to the customer app repo
 ENV APP_REPO git@github.com:Vauxoo/app_repo.git
 
 RUN adduser --home=/home/odoo --disabled-password --gecos "" --shell=/bin/bash odoo \
@@ -17,7 +17,7 @@ RUN adduser --home=/home/odoo --disabled-password --gecos "" --shell=/bin/bash o
     && mkdir /external_files
 
 ## This is a key you must copy in the same folder as the dockerfile
-## bur remember not to add it when you commit the files
+## but remember not to add it when you commit the files
 COPY id_rsa /home/odoo/.ssh/id_rsa
 COPY id_rsa /root/.ssh/id_rsa
 
@@ -50,7 +50,9 @@ RUN /bin/bash -c "mkdir -p /home/odoo/instance/{config,extra_addons}" \
     && rm /home/odoo/.ssh/id_rsa \
     && mkdir -p /home/odoo/.local/share
 COPY files/openerp_serverrc /home/odoo/.openerp_serverrc
+
 USER root
+## Actually here is where the instance is build
 RUN pip install --upgrade pip \
     && ssh-keyscan github.com > /root/.ssh/known_hosts \
     && cd /home/odoo/instance/extra_addons \
