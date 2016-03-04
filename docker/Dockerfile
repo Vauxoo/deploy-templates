@@ -10,9 +10,9 @@ ENV VERSION 8.0
 # Change the repor according to the customer app repo
 ENV APP_REPO git@github.com:Vauxoo/app_repo.git
 
-RUN adduser --home=/home/odoo --disabled-password --gecos "" --shell=/bin/bash odoo
-RUN echo 'root:odoo' |chpasswd
-RUN mkdir -p /home/odoo/.ssh \
+RUN adduser --home=/home/odoo --disabled-password --gecos "" --shell=/bin/bash odoo \
+    && echo 'root:odoo' |chpasswd \
+    && mkdir -p /home/odoo/.ssh \
     && mkdir -p /root/.ssh \
     && mkdir /external_files
 
@@ -32,9 +32,11 @@ COPY files/openerp_serverrc /external_files/openerp_serverrc
 COPY files/build_branches.sh /tmp/build_branches.sh
 
 USER odoo
-ENV HOME /home/odoo
-ENV ODOO_CONFIG_FILE /home/odoo/.openerp_serverrc
-ENV ODOO_FILESTORE_PATH /home/odoo/.local/share/Odoo/filestore
+ENV HOME="/home/odoo" \
+    ODOO_CONFIG_FILE="/home/odoo/.openerp_serverrc" \
+    ODOO_FILESTORE_PATH="/home/odoo/.local/share/Odoo/filestore" \
+    XDG_DATA_HOME="/home/odoo/.local/share"
+
 
 ## Scan the keys to avoid the add question
 RUN ssh-keyscan github.com > /home/odoo/.ssh/known_hosts \
@@ -42,14 +44,11 @@ RUN ssh-keyscan github.com > /home/odoo/.ssh/known_hosts \
     && ssh-keyscan bitbucket.org >> /home/odoo/.ssh/known_hosts
 
 ## Make the instance folder structure
-RUN /bin/bash -c "mkdir -p /home/odoo/instance/{config,extra_addons}"
-RUN cd /home/odoo/instance \
-    && git clone -b $VERSION --single-branch --depth=1 git@github.com:Vauxoo/odoo.git odoo
-
-## Remove the key file you added before
-RUN rm /home/odoo/.ssh/id_rsa \
+RUN /bin/bash -c "mkdir -p /home/odoo/instance/{config,extra_addons}" \
+    && /home/odoo/instance \
+    && git clone -b $VERSION --single-branch --depth=1 git@github.com:Vauxoo/odoo.git odoo \
+    && rm /home/odoo/.ssh/id_rsa \
     && mkdir -p /home/odoo/.local/share
-ENV XDG_DATA_HOME /home/odoo/.local/share
 COPY files/openerp_serverrc /home/odoo/.openerp_serverrc
 USER root
 RUN pip install --upgrade pip \
