@@ -18,12 +18,9 @@ RUN adduser --home=/home/odoo --disabled-password --gecos "" --shell=/bin/bash o
 
 ## This is a key you must copy in the same folder as the dockerfile
 ## but remember not to add it when you commit the files
-COPY id_rsa /home/odoo/.ssh/id_rsa
 COPY id_rsa /root/.ssh/id_rsa
 
-
 RUN chown odoo:odoo -R /home/odoo/.ssh \
-    && chmod 600 /home/odoo/.ssh/id_rsa \
     && chmod 600 /root/.ssh/id_rsa
 
 COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -43,18 +40,16 @@ RUN ssh-keyscan github.com > /home/odoo/.ssh/known_hosts \
     && ssh-keyscan launchpad.net >> /home/odoo/.ssh/known_hosts \
     && ssh-keyscan bitbucket.org >> /home/odoo/.ssh/known_hosts
 
-## Make the instance folder structure
-RUN /bin/bash -c "mkdir -p /home/odoo/instance/{config,extra_addons}" \
-    && /home/odoo/instance \
-    && git clone -b $VERSION --single-branch --depth=1 git@github.com:Vauxoo/odoo.git odoo \
-    && rm /home/odoo/.ssh/id_rsa \
-    && mkdir -p /home/odoo/.local/share
-COPY files/openerp_serverrc /home/odoo/.openerp_serverrc
-
 USER root
 ## Actually here is where the instance is build
-RUN pip install --upgrade pip \
-    && ssh-keyscan github.com > /root/.ssh/known_hosts \
+## Make the instance folder structure
+COPY files/openerp_serverrc /home/odoo/.openerp_serverrc
+RUN ssh-keyscan github.com > /root/.ssh/known_hosts \
+    && /bin/bash -c "mkdir -p /home/odoo/instance/{config,extra_addons}" \
+    && cd /home/odoo/instance \
+    && git clone -b $VERSION --single-branch --depth=1 git@github.com:Vauxoo/odoo.git odoo \
+    && mkdir -p /home/odoo/.local/share \
+    && pip install --upgrade pip \
     && cd /home/odoo/instance/extra_addons \
     && git clone -b $VERSION --single-branch --depth=1 $APP_REPO \
     && sh /tmp/build_branches.sh \
