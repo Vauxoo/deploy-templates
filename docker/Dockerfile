@@ -13,23 +13,23 @@ ENV APP_REPO git@github.com:Vauxoo/app_repo.git
 RUN adduser --home=/home/odoo --disabled-password --gecos "" --shell=/bin/bash odoo
 RUN echo 'root:odoo' |chpasswd
 RUN mkdir -p /home/odoo/.ssh \
-    && mkdir -p /root/.ssh
+    && mkdir -p /root/.ssh \
+    && mkdir /external_files
 
 ## This is a key you must copy in the same folder as the dockerfile
 ## bur remember not to add it when you commit the files
-ADD id_rsa /home/odoo/.ssh/id_rsa
-ADD id_rsa /root/.ssh/id_rsa
+COPY id_rsa /home/odoo/.ssh/id_rsa
+COPY id_rsa /root/.ssh/id_rsa
 
 
 RUN chown odoo:odoo -R /home/odoo/.ssh \
     && chmod 600 /home/odoo/.ssh/id_rsa \
     && chmod 600 /root/.ssh/id_rsa
 
-ADD files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-RUN mkdir /external_files
-ADD files/supervisord.conf /external_files/supervisord.conf
-ADD files/openerp_serverrc /external_files/openerp_serverrc
-ADD files/build_branches.sh /tmp/build_branches.sh
+COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY files/supervisord.conf /external_files/supervisord.conf
+COPY files/openerp_serverrc /external_files/openerp_serverrc
+COPY files/build_branches.sh /tmp/build_branches.sh
 
 USER odoo
 ENV HOME /home/odoo
@@ -50,7 +50,7 @@ RUN cd /home/odoo/instance \
 RUN rm /home/odoo/.ssh/id_rsa \
     && mkdir -p /home/odoo/.local/share
 ENV XDG_DATA_HOME /home/odoo/.local/share
-ADD files/openerp_serverrc /home/odoo/.openerp_serverrc
+COPY files/openerp_serverrc /home/odoo/.openerp_serverrc
 USER root
 RUN pip install --upgrade pip \
     && ssh-keyscan github.com > /root/.ssh/known_hosts \
